@@ -1,25 +1,34 @@
 var express = require('express');
 var app = express();
+var fs = require('fs');
 var bodyParser = require('body-parser');
+var multer = require('multer');
 
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-app.use(express.static('public'))
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({ dest: '/tmp/'}));
 
 app.get('/index.htm', function (req, res){
-	res.sendFile( __dirname + "/" + "index.htm" );
+  res.sendFile( __dirname + "/" + "index.htm" );
 })
 
-app.post('/process_post', urlencodedParser, function (req, res){
-	response = {
-		first_name: req.body.first_name,
-		last_name: req.body.last_name
-	};
-	res.end(JSON.stringify(response));
+app.post('/file_upload', function (req, res){
+  var file = __dirname + "/" + req.files.file.name;
+  fs.readFile( req.files.file.path, function (err, data){
+    if ( err ) {
+      console.log( err );
+    }else{
+      response = {
+        message: 'File uploaded successfully',
+        filename: req.files.file.name
+      };
+      res.end(JSON.stringify(response));
+    };
+  })
 })
 
 app.get('/',function (req, res){
-	res.send('Hello GET');
+  res.send('Hello GET');
 })
 
 app.post('/',function (req, res){
@@ -35,7 +44,7 @@ app.get('/list_user', function (req, res){
 })
 
 app.get('/ab*cd', function (req, res){
-	res.send('Page Pattern Match')
+  res.send('Page Pattern Match')
 })
 
 var server = app.listen(8081, function(){
